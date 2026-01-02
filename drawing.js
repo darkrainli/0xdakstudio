@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (err.message.includes("API Key")) {
                 predictionText.innerText = "请配置 API Key";
             } else if (err.message.includes("fetch") || err.message.includes("Failed to fetch")) {
-                predictionText.innerText = "网络连接失败。请检查你的 VPN/代理是否已开启。";
+                predictionText.innerHTML = "网络连接失败。<br><span style='font-size:14px;color:#666'>请确保你的 VPN/代理已开启，并且支持 Google API。</span><br><span style='font-size:12px;color:#999'>提示：如果你在中国大陆，你需要全局代理或配置浏览器代理规则。</span>";
             } else {
                 // 显示具体的错误信息，方便调试
                 predictionText.innerText = `出错了: ${err.message || err.toString()}`;
