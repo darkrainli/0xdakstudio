@@ -6,7 +6,7 @@ const SUPABASE_KEY = 'sb_publishable_f_T0nYNO6M0VuAmvmY5cDw_WKRdb_Br';
 // 智谱 AI (ZhipuAI) API Key
 // 申请地址：https://open.bigmodel.cn/
 // ⚠️ 警告：在前端暴露 API Key 是不安全的。生产环境请通过后端转发。
-window.ZHIPU_API_KEY = 'YOUR_ZHIPU_API_KEY_HERE';
+window.ZHIPU_API_KEY = '1fe65027c8f8452abcdfad0d303b8e25.aBY4IIbaeZDk46Hg';
 
 // 初始化 Supabase 客户端
 // 注意：需要先在 HTML 中引入 Supabase JS 库
