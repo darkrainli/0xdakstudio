@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>作品管理后台</title>
     <link rel="stylesheet" href="style.css">
-    <!-- 引入 Supabase 客户端 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 引入 Supabase 客户端 (更换为 unpkg 源) -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
     <div class="admin-container">
@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <script src="config.js?v=3"></script>
+    <script src="config.js?v=4"></script>
     <script>
         // 简单的后台逻辑
         const uploadForm = document.getElementById('upload-form');
