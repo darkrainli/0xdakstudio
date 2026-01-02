@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             aiStatus.style.display = 'none';
             aiResult.style.display = 'block';
-            predictionText.innerText = `Nano Banana 觉得这是... ${text}！`;
+            predictionText.innerText = `我识别出来是... ${text}！`;
 
         } catch (err) {
             console.error(err);
