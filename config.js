@@ -9,8 +9,12 @@ const SUPABASE_KEY = 'sb_publishable_f_T0nYNO6M0VuAmvmY5cDw_WKRdb_Br';
 
 let supabase;
 
-if (typeof createClient !== 'undefined') {
-    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-} else if (window.supabase) {
+// 确保 createClient 可用
+if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} else if (typeof createClient !== 'undefined') {
+    // 兼容某些环境
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+} else {
+    console.error('Supabase library not loaded!');
 }
