@@ -5,7 +5,7 @@
 }
 
 body {
-    background-color: #F4F4F4; /* 浅灰色背景 */
+    background-color: transparent; /* 让 Canvas 负责背景 */
     color: #000; /* 黑色文字 */
     font-family: sans-serif;
     overflow-x: hidden;
