@@ -1,18 +1,6 @@
 const canvas = document.getElementById('matrix-bg');
 const ctx = canvas.getContext('2d');
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-resizeCanvas();
-// 移除 resize 事件监听，或者确保 resize 后重新开始绘制（如果之前的绘制循环还在运行的话）
-// 但在 requestAnimationFrame 中，只要 ctx 还在，它就会继续画。
-// 问题在于：当改变 canvas 尺寸时，画布内容会被清空。
-// 我们的 draw 函数每一帧都会清空并重绘，所以理论上不应该消失。
-// 除非... resize 导致了某些状态重置。
-window.addEventListener('resize', resizeCanvas);
-
 // ---------------------------------------------------
 // 简单的 Perlin Noise 实现 (为了不依赖外部库，手写一个简化版)
 // ---------------------------------------------------
@@ -67,7 +55,24 @@ function noise(x, y, z) {
 const gridSize = 20; // 增大网格到 20px
 let time = 0;
 
+// 标记是否需要调整大小
+let needsResize = true;
+
+function handleResize() {
+    needsResize = true;
+}
+
+window.addEventListener('resize', handleResize);
+
 function draw() {
+    // 在绘制循环的开始检查是否需要 resize
+    // 这样可以避免 resize 事件频繁触发导致的闪烁或状态丢失
+    if (needsResize) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        needsResize = false;
+    }
+
     // 1. 清空背景
     ctx.fillStyle = '#F4F4F4';
     ctx.fillRect(0, 0, canvas.width, canvas.height);

@@ -8,6 +8,8 @@ if (blobCanvas) {
     // ----------------------------
     // 1. 高清 Canvas 初始化
     // ----------------------------
+    let needsResize = true;
+    
     function initCanvas() {
         const parent = blobCanvas.parentElement;
         if (parent) {
@@ -32,19 +34,13 @@ if (blobCanvas) {
 
     window.addEventListener('resize', () => {
         dpr = window.devicePixelRatio || 1;
-        initCanvas();
-        // 关键：不需要重新调用 animate()，因为之前的 loop 还在跑
-        // 重新调用会导致多个 loop 同时运行，可能会闪烁或性能下降
-        // 但如果之前的 loop 因为某些原因停止了，或者我们需要重置实体位置？
-        // 在这里，只要 initCanvas 更新了 width/height，下一帧 draw() 就会使用新尺寸。
-        
-        // 确保实体不会跑出新边界
-        // 可以选择在这里重新 initEntities()，或者在 updateEntities 里处理边界
+        needsResize = true;
     });
     
     // 初始延迟，确保容器布局完成
     setTimeout(() => {
-        initCanvas();
+        // initCanvas(); // 移除直接调用，改用 needsResize
+        needsResize = true;
         initEntities();
         animate();
     }, 100);
@@ -170,6 +166,10 @@ if (blobCanvas) {
     }
 
     function animate() {
+        if (needsResize) {
+            initCanvas();
+            needsResize = false;
+        }
         updateEntities();
         draw();
         requestAnimationFrame(animate);
