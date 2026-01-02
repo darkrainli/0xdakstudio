@@ -12,10 +12,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const descEl = document.getElementById('artwork-description');
     const galleryEl = document.getElementById('detail-gallery');
 
-    // 如果没有配置 Supabase
-    if (!window.sbClient) {
-        titleEl.innerText = '配置错误';
-        descEl.innerText = '无法连接到数据库。';
+    // 增加重试逻辑：等待 Supabase 客户端初始化
+    async function waitForSupabase() {
+        let attempts = 0;
+        while (!window.sbClient && attempts < 10) {
+            await new Promise(r => setTimeout(r, 200));
+            attempts++;
+        }
+        return !!window.sbClient;
+    }
+
+    if (!(await waitForSupabase())) {
+        titleEl.innerText = '连接超时';
+        descEl.innerText = '无法连接到数据库，请检查网络或配置。';
         return;
     }
 
