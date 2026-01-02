@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         titleEl.innerText = data.title || '无题';
         // 处理描述中的换行符
         descEl.innerHTML = (data.description || '').replace(/\n/g, '<br>');
-        document.title = `${data.title} - 0xdak Art Studio`;
+        document.title = `${data.title} - 0xdak.art`;
 
         // 渲染图片列表
         // 目前数据库结构只支持一张图片，所以我们先展示这一张
