@@ -5,8 +5,8 @@
 }
 
 body {
-    background-color: #000; /* 黑色底色 */
-    color: #fff; /* 白色文字 */
+    background-color: #DFD7D3; /* 暖灰色背景 */
+    color: #000; /* 黑色文字 */
     font-family: sans-serif;
     overflow-x: hidden;
 }
