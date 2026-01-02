@@ -59,42 +59,44 @@ function noise(x, y, z) {
 // ---------------------------------------------------
 
 // 配置参数
-const gridSize = 12; // 网格间距，越小点越密
+const gridSize = 15; // 稍微增大网格间距，让离散感更强
 let time = 0;
 
 function draw() {
     // 1. 清空背景
-    ctx.fillStyle = '#DFD7D3';
+    ctx.fillStyle = '#F4F4F4';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#000000'; // 点的颜色
+    ctx.fillStyle = '#E7E5E5'; // 点阵颜色
 
     // 2. 遍历网格
     for (let x = 0; x < canvas.width; x += gridSize) {
         for (let y = 0; y < canvas.height; y += gridSize) {
             // 3. 计算噪声值
-            // x/200, y/200 控制空间频率（云团的大小）
-            // time 控制时间流动
-            const n = noise(x / 300, y / 300, time);
-            
-            // noise 返回 -1 到 1，我们需要映射到 0 到 1
+            const n = noise(x / 400, y / 400, time); // 增大除数，让云团更舒缓
             const value = (n + 1) / 2;
 
-            // 4. 根据噪声值决定点的半径
-            // 增加对比度：让小的更小，大的更大
-            let radius = value * gridSize * 0.8;
+            // 4. 计算偏移量 (Jitter)
+            // 让点的位置不再死板地固定在网格上
+            // value 越大（即点越大），偏移越小（为了保持视觉重心）；点越小，越容易飘散
+            // 随机偏移范围：-gridSize/2 到 +gridSize/2
+            const offsetX = (Math.random() - 0.5) * gridSize * 0.8;
+            const offsetY = (Math.random() - 0.5) * gridSize * 0.8;
+
+            // 5. 绘制点
+            let radius = value * gridSize * 0.6; // 稍微减小半径比例
             
-            // 只有当半径足够大时才绘制，产生“空洞”感
             if (radius > 1) {
                 ctx.beginPath();
-                ctx.arc(x, y, radius / 2, 0, Math.PI * 2);
+                // 加上偏移量
+                ctx.arc(x + offsetX, y + offsetY, radius / 2, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
     }
 
     // 时间流速
-    time += 0.003;
+    time += 0.002; // 稍微减慢
 
     requestAnimationFrame(draw);
 }
