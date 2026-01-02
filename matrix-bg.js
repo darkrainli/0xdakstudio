@@ -73,19 +73,18 @@ function draw() {
     for (let x = 0; x < canvas.width; x += gridSize) {
         for (let y = 0; y < canvas.height; y += gridSize) {
             // 3. 计算噪声值
-            // 恢复之前的参数 x/300, y/300
-            const n = noise(x / 300, y / 300, time);
+            // 减小除数（从 300 减到 180），让云团更碎、变化更丰富
+            const n = noise(x / 180, y / 180, time);
             
             const value = (n + 1) / 2;
 
             // 4. 根据噪声值决定点的半径
-            // 恢复之前的对比度逻辑
-            let radius = value * gridSize * 0.8;
+            // 增大半径比例（从 0.8 到 0.9），让点更大更明显
+            let radius = value * gridSize * 0.9;
             
-            // 只有当半径足够大时才绘制
-            if (radius > 1) {
+            // 降低阈值（从 1 到 0.5），让更多的点显示出来
+            if (radius > 0.5) {
                 ctx.beginPath();
-                // 移除 offset，恢复整齐排列
                 ctx.arc(x, y, radius / 2, 0, Math.PI * 2);
                 ctx.fill();
             }
@@ -93,7 +92,8 @@ function draw() {
     }
 
     // 时间流速
-    time += 0.003; // 恢复之前的流速
+    // 加快流速（从 0.003 到 0.008），让变化肉眼可见
+    time += 0.008;
 
     requestAnimationFrame(draw);
 }
