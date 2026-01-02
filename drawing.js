@@ -92,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const genAI = new GoogleGenerativeAI(API_KEY);
-        // 使用 gemini-1.5-flash 模型，速度快且便宜
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // 使用 gemini-1.5-flash-latest 模型，以获得更好的兼容性
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
         // 1. 将 canvas 转换为 base64 (移除 data:image/jpeg;base64, 前缀)
         const base64Image = canvas.toDataURL("image/jpeg")
@@ -137,6 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (err.message.includes("API Key")) {
                 predictionText.innerText = "请配置 API Key";
+            } else if (err.message.includes("fetch") || err.message.includes("Failed to fetch")) {
+                predictionText.innerText = "网络连接失败。请检查你的 VPN/代理是否已开启。";
             } else {
                 // 显示具体的错误信息，方便调试
                 predictionText.innerText = `出错了: ${err.message || err.toString()}`;
