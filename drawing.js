@@ -1,5 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('art-canvas');
     const ctx = canvas.getContext('2d');
@@ -83,38 +81,48 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     });
 
-    // 3. Gemini AI 识别逻辑
-    async function identifyDrawingWithGemini(canvas) {
-        const API_KEY = window.GEMINI_API_KEY;
+    // 3. 智谱 GLM-4V 识别逻辑
+    async function identifyDrawingWithZhipu(canvas) {
+        const API_KEY = window.ZHIPU_API_KEY;
         
-        if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
-            throw new Error("请先在 config.js 中配置 Google Gemini API Key");
+        if (!API_KEY || API_KEY.includes('YOUR_ZHIPU_API_KEY')) {
+            throw new Error("请先在 config.js 中配置智谱 API Key");
         }
-
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        // 使用 gemini-1.5-flash-latest 模型，以获得更好的兼容性
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
         // 1. 将 canvas 转换为 base64 (移除 data:image/jpeg;base64, 前缀)
         const base64Image = canvas.toDataURL("image/jpeg")
             .replace(/^data:image\/jpeg;base64,/, "");
 
-        // 2. 准备 Prompt
-        const prompt = "Look at this simple sketch. What object is it depicting? Answer in one word in Chinese. (e.g. '香蕉'). If it's abstract or messy, make a creative guess.";
-
-        // 3. 调用 API
-        const result = await model.generateContent([
-            prompt,
-            {
-                inlineData: {
-                    data: base64Image,
-                    mimeType: "image/jpeg",
-                },
+        // 2. 调用智谱 API
+        const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
             },
-        ]);
+            body: JSON.stringify({
+                model: "glm-4v-flash", // 使用性价比最高的 Flash 模型
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: "这张简笔画画的是什么？请用一个中文词语回答（例如：香蕉）。如果是乱涂乱画，就猜一个最像的。" },
+                            { type: "image_url", image_url: { url: base64Image } }
+                        ]
+                    }
+                ],
+                max_tokens: 50,
+                temperature: 0.1 // 降低随机性，提高准确度
+            })
+        });
 
-        const response = await result.response;
-        return response.text().trim();
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content.trim();
     }
 
     nextBtn.addEventListener('click', async () => {
@@ -124,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         aiResult.style.display = 'none';
 
         try {
-            const text = await identifyDrawingWithGemini(canvas);
+            const text = await identifyDrawingWithZhipu(canvas);
             
             aiStatus.style.display = 'none';
             aiResult.style.display = 'block';
@@ -136,9 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             aiResult.style.display = 'block';
             
             if (err.message.includes("API Key")) {
-                predictionText.innerText = "请配置 API Key";
-            } else if (err.message.includes("fetch") || err.message.includes("Failed to fetch")) {
-                predictionText.innerHTML = "网络连接失败。<br><span style='font-size:14px;color:#666'>请确保你的 VPN/代理已开启，并且支持 Google API。</span><br><span style='font-size:12px;color:#999'>提示：如果你在中国大陆，你需要全局代理或配置浏览器代理规则。</span>";
+                predictionText.innerText = "请配置智谱 API Key";
             } else {
                 // 显示具体的错误信息，方便调试
                 predictionText.innerText = `出错了: ${err.message || err.toString()}`;
