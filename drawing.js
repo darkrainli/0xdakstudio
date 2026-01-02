@@ -138,7 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (err.message.includes("API Key")) {
                 predictionText.innerText = "请配置 API Key";
             } else {
-                predictionText.innerText = "Nano Banana 遇到了一点问题...";
+                // 显示具体的错误信息，方便调试
+                predictionText.innerText = `出错了: ${err.message || err.toString()}`;
             }
         }
     });
