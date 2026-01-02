@@ -6,7 +6,7 @@ const SUPABASE_KEY = 'sb_publishable_f_T0nYNO6M0VuAmvmY5cDw_WKRdb_Br';
 // Google Gemini API Key
 // ⚠️ 警告：在前端暴露 API Key 是不安全的。生产环境请通过后端转发。
 // 请在这里填入你的 Key
-window.GEMINI_API_KEY = 'YOUR_API_KEY_HERE';
+window.GEMINI_API_KEY = 'AIzaSyC7yKSRC7SsMJzh4ow3wW-xDiCO8daZDLQ';
 
 // 初始化 Supabase 客户端
 // 注意：需要先在 HTML 中引入 Supabase JS 库
