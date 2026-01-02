@@ -8,39 +8,94 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// 噪点配置
-// 密度适中，保证质感
-const noiseDensity = 0.09; 
+// ---------------------------------------------------
+// 简单的 Perlin Noise 实现 (为了不依赖外部库，手写一个简化版)
+// ---------------------------------------------------
+const permutation = new Uint8Array(512);
+const p = new Uint8Array(256);
+for (let i = 0; i < 256; i++) p[i] = i;
+// Shuffle
+for (let i = 255; i > 0; i--) {
+    const r = Math.floor(Math.random() * (i + 1));
+    [p[i], p[r]] = [p[r], p[i]];
+}
+for (let i = 0; i < 512; i++) permutation[i] = p[i & 255];
+
+function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+function lerp(t, a, b) { return a + t * (b - a); }
+function grad(hash, x, y, z) {
+    const h = hash & 15;
+    const u = h < 8 ? x : y;
+    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+}
+
+function noise(x, y, z) {
+    const X = Math.floor(x) & 255;
+    const Y = Math.floor(y) & 255;
+    const Z = Math.floor(z) & 255;
+    x -= Math.floor(x);
+    y -= Math.floor(y);
+    z -= Math.floor(z);
+    const u = fade(x);
+    const v = fade(y);
+    const w = fade(z);
+    const A = permutation[X] + Y;
+    const AA = permutation[A] + Z;
+    const AB = permutation[A + 1] + Z;
+    const B = permutation[X + 1] + Y;
+    const BA = permutation[B] + Z;
+    const BB = permutation[B + 1] + Z;
+
+    return lerp(w, lerp(v, lerp(u, grad(permutation[AA], x, y, z),
+        grad(permutation[BA], x - 1, y, z)),
+        lerp(u, grad(permutation[AB], x, y - 1, z),
+        grad(permutation[BB], x - 1, y - 1, z))),
+        lerp(v, lerp(u, grad(permutation[AA + 1], x, y, z - 1),
+        grad(permutation[BA + 1], x - 1, y, z - 1)),
+        lerp(u, grad(permutation[AB + 1], x, y - 1, z - 1),
+        grad(permutation[BB + 1], x - 1, y - 1, z - 1))));
+}
+// ---------------------------------------------------
+
+// 配置参数
+const gridSize = 12; // 网格间距，越小点越密
+let time = 0;
 
 function draw() {
     // 1. 清空背景
-    ctx.fillStyle = '#F4F4F4';
+    ctx.fillStyle = '#DFD7D3';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. 获取像素
-    const w = canvas.width;
-    const h = canvas.height;
-    const iData = ctx.getImageData(0, 0, w, h);
-    const buffer = iData.data;
-    const len = buffer.length;
+    ctx.fillStyle = '#000000'; // 点的颜色
 
-    // 3. 随机生成噪点
-    for (let i = 0; i < len; i += 4) {
-        if (Math.random() < noiseDensity) {
-            // 噪点像素：纯黑
-            buffer[i] = 0;
-            buffer[i + 1] = 0;
-            buffer[i + 2] = 0;
-            // 不透明度：15 (约 6%)
-            // 这是一个非常微妙的值，既能看到震荡，又完全不会干扰前景
-            buffer[i + 3] = 15; 
+    // 2. 遍历网格
+    for (let x = 0; x < canvas.width; x += gridSize) {
+        for (let y = 0; y < canvas.height; y += gridSize) {
+            // 3. 计算噪声值
+            // x/200, y/200 控制空间频率（云团的大小）
+            // time 控制时间流动
+            const n = noise(x / 300, y / 300, time);
+            
+            // noise 返回 -1 到 1，我们需要映射到 0 到 1
+            const value = (n + 1) / 2;
+
+            // 4. 根据噪声值决定点的半径
+            // 增加对比度：让小的更小，大的更大
+            let radius = value * gridSize * 0.8;
+            
+            // 只有当半径足够大时才绘制，产生“空洞”感
+            if (radius > 1) {
+                ctx.beginPath();
+                ctx.arc(x, y, radius / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     }
 
-    // 4. 放回画布
-    ctx.putImageData(iData, 0, 0);
+    // 时间流速
+    time += 0.003;
 
-    // 5. 循环
     requestAnimationFrame(draw);
 }
 
