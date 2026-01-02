@@ -54,15 +54,15 @@ body {
 }
 
 .logo {
-    width: 127px; /* Figma: 127px */
+    width: 152px; /* 原 127px * 1.2 ≈ 152.4px */
     height: auto;
-    margin-bottom: 7px;
+    margin-bottom: 9px; /* 原 7px * 1.2 ≈ 8.4px */
 }
 
 .site-title {
     font-family: 'Urbanist', sans-serif;
-    font-size: 16px;
-    font-weight: 800;
+    font-size: 19.2px; /* 原 16px * 1.2 = 19.2px */
+    font-weight: 900; /* 加粗，原 800，现 900 (Black) */
     margin: 0;
     letter-spacing: 0;
     color: #000;
