@@ -143,11 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
             aiStatus.style.display = 'none';
             aiResult.style.display = 'block';
             
-            if (err.message.includes("API Key")) {
+            const errorMessage = err.message || err.toString();
+            if (errorMessage.includes("API Key")) {
                 predictionText.innerText = "请配置智谱 API Key";
             } else {
                 // 显示具体的错误信息，方便调试
-                predictionText.innerText = `出错了: ${err.message || err.toString()}`;
+                predictionText.innerText = `出错了: ${errorMessage}`;
             }
         }
     });
