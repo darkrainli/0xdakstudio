@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品详情 - 0xdak Art Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 Google Fonts: Urbanist -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@800;900&display=swap" rel="stylesheet">
+    
+    <!-- 引入 Supabase 客户端 -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="detail-page">
+
+    <!-- 顶部 Header -->
+    <header class="site-header detail-header">
+        <a href="/" class="logo-link">
+            <img src="assets/logo.svg" alt="0xdak Art Studio" class="logo">
+        </a>
+        <h1 class="site-title">0xdak Art Studio</h1>
+    </header>
+
+    <main class="detail-container">
+        <div class="detail-info">
+            <h1 id="artwork-title" class="artwork-title">加载中...</h1>
+            <p id="artwork-description" class="artwork-description"></p>
+        </div>
+
+        <div class="detail-gallery" id="detail-gallery">
+            <!-- 图片将在这里渲染 -->
+            <div class="loading-spinner"></div>
+        </div>
+    </main>
+
+    <script src="config.js?v=5"></script>
+    <script src="detail.js?v=1"></script>
+</body>
+</html>

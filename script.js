@@ -64,20 +64,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // 绑定点击事件
                 div.addEventListener('click', (e) => {
-                    // 如果正在拖拽（父容器有 is-dragging 类），则阻止弹窗
+                    // 如果正在拖拽（父容器有 is-dragging 类），则阻止跳转
                     if (document.querySelector('.horizontal-gallery-container').classList.contains('is-dragging')) {
                         e.preventDefault();
                         e.stopPropagation();
                         return;
                     }
 
-                    modal.style.display = 'flex';
-                    modalImg.src = item.image_url;
-                    
-                    let captionText = '';
-                    if (item.title) captionText += `<strong>${item.title}</strong><br>`;
-                    if (item.description) captionText += `<span style="font-size:0.9em; opacity:0.8">${item.description}</span>`;
-                    modalCaption.innerHTML = captionText;
+                    // 跳转到详情页
+                    window.location.href = `detail.html?id=${item.id}`;
                 });
             });
 
