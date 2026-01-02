@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品管理后台</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 Supabase 客户端 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="admin-body">
+    <div class="admin-container">
+        <h1>作品上传后台</h1>
+        
+        <div class="upload-section">
+            <h2>上传新作品</h2>
+            <form id="upload-form">
+                <div class="form-group">
+                    <label for="file">选择图片</label>
+                    <input type="file" id="file" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                    <label for="title">作品标题</label>
+                    <input type="text" id="title" placeholder="例如：无题 No.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">作品描述</label>
+                    <textarea id="description" placeholder="关于这个作品的介绍..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="access-code">管理密码 (Access Code)</label>
+                    <input type="password" id="access-code" placeholder="输入简单的验证码" required>
+                    <small style="color: #666;">为了演示方便，我们在代码里硬编码了一个简单密码: 8888</small>
+                </div>
+                <button type="submit" id="submit-btn">上传作品</button>
+            </form>
+            <div id="status-msg"></div>
+        </div>
+
+        <div class="list-section">
+            <h2>已上传作品</h2>
+            <button onclick="loadArtworks()" class="refresh-btn">刷新列表</button>
+            <div id="admin-gallery" class="admin-gallery">
+                <!-- 这里会动态加载作品列表 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // 简单的后台逻辑
+        const uploadForm = document.getElementById('upload-form');
+        const statusMsg = document.getElementById('status-msg');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // 硬编码的简单密码，实际生产环境建议使用 Supabase Auth
+        const ADMIN_CODE = '8888'; 
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('file');
+            const titleInput = document.getElementById('title');
+            const descInput = document.getElementById('description');
+            const codeInput = document.getElementById('access-code');
+
+            if (codeInput.value !== ADMIN_CODE) {
+                alert('密码错误！');
+                return;
+            }
+
+            if (fileInput.files.length === 0) return;
+
+            const file = fileInput.files[0];
+            const title = titleInput.value;
+            const description = descInput.value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = '上传中...';
+            statusMsg.innerText = '正在上传图片...';
+
+            try {
+                // 1. 上传图片到 Storage
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('portfolio')
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                // 2. 获取图片公开链接
+                const { data: { publicUrl } } = supabase.storage
+                    .from('portfolio')
+                    .getPublicUrl(filePath);
+
+                statusMsg.innerText = '图片上传成功，正在保存信息...';
+
+                // 3. 保存信息到 Database
+                const { error: dbError } = await supabase
+                    .from('artworks')
+                    .insert([
+                        { 
+                            title: title, 
+                            description: description, 
+                            image_url: publicUrl 
+                        }
+                    ]);
+
+                if (dbError) throw dbError;
+
+                statusMsg.innerText = '✅ 上传成功！';
+                statusMsg.style.color = 'green';
+                
+                // 重置表单
+                uploadForm.reset();
+                // 刷新列表
+                loadArtworks();
+
+            } catch (error) {
+                console.error(error);
+                statusMsg.innerText = '❌ 错误: ' + error.message;
+                statusMsg.style.color = 'red';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '上传作品';
+            }
+        });
+
+        async function loadArtworks() {
+            const gallery = document.getElementById('admin-gallery');
+            gallery.innerHTML = '加载中...';
+
+            const { data, error } = await supabase
+                .from('artworks')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                gallery.innerHTML = '加载失败: ' + error.message;
+                return;
+            }
+
+            gallery.innerHTML = '';
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'admin-item';
+                div.innerHTML = `
+                    <img src="${item.image_url}" alt="${item.title}">
+                    <div class="admin-item-info">
+                        <strong>${item.title}</strong>
+                        <button onclick="deleteArtwork(${item.id}, '${item.image_url}')" class="delete-btn">删除</button>
+                    </div>
+                `;
+                gallery.appendChild(div);
+            });
+        }
+
+        async function deleteArtwork(id, imageUrl) {
+            const code = prompt("请输入管理密码确认删除：");
+            if (code !== ADMIN_CODE) {
+                alert("密码错误");
+                return;
+            }
+
+            if (!confirm('确定要删除这个作品吗？')) return;
+
+            try {
+                // 1. 删除数据库记录
+                const { error: dbError } = await supabase
+                    .from('artworks')
+                    .delete()
+                    .eq('id', id);
+                
+                if (dbError) throw dbError;
+
+                // 2. (可选) 删除 Storage 里的文件
+                // 从 URL 提取文件名有点麻烦，这里暂略，主要删除数据记录即可
+                
+                alert('删除成功');
+                loadArtworks();
+            } catch (error) {
+                alert('删除失败: ' + error.message);
+            }
+        }
+
+        // 页面加载时获取列表
+        loadArtworks();
+    </script>
+</body>
+</html>

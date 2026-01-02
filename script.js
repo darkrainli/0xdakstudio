@@ -1,30 +1,84 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // 模态框相关元素
     const modal = document.getElementById('modal');
     const modalImg = document.getElementById('modal-img');
+    const modalCaption = document.getElementById('modal-caption');
     const closeBtn = document.querySelector('.close');
-    const artworkItems = document.querySelectorAll('.artwork-item img');
 
-    // 点击图片打开模态框
-    artworkItems.forEach(img => {
-        img.addEventListener('click', () => {
-            modal.style.display = 'flex';
-            modalImg.src = img.src;
-        });
-    });
+    // Supabase 数据加载
+    const galleryContainer = document.getElementById('gallery-container');
 
-    // 点击关闭按钮关闭模态框
+    async function fetchArtworks() {
+        // 如果没有配置 Supabase，显示提示
+        if (!supabase) {
+            galleryContainer.innerHTML = '<div style="padding:20px">请先配置 config.js 里的 Supabase 密钥</div>';
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('artworks')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                galleryContainer.innerHTML = '<div style="padding:20px; color:#999">暂无作品，请访问 /admin.html 上传</div>';
+                return;
+            }
+
+            // 清空容器
+            galleryContainer.innerHTML = '';
+
+            // 渲染作品
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'artwork-item';
+                // 存储标题和描述在 dataset 中，方便点击时读取
+                div.dataset.title = item.title || '';
+                div.dataset.description = item.description || '';
+                
+                const img = document.createElement('img');
+                img.src = item.image_url;
+                img.alt = item.title || 'Artwork';
+                
+                div.appendChild(img);
+                galleryContainer.appendChild(div);
+
+                // 绑定点击事件
+                div.addEventListener('click', () => {
+                    modal.style.display = 'flex';
+                    modalImg.src = item.image_url;
+                    
+                    // 构建描述文字
+                    let captionText = '';
+                    if (item.title) captionText += `<strong>${item.title}</strong><br>`;
+                    if (item.description) captionText += `<span style="font-size:0.9em; opacity:0.8">${item.description}</span>`;
+                    modalCaption.innerHTML = captionText;
+                });
+            });
+
+        } catch (err) {
+            console.error(err);
+            galleryContainer.innerHTML = `<div style="padding:20px; color:red">加载失败: ${err.message}</div>`;
+        }
+    }
+
+    // 初始化加载
+    fetchArtworks();
+
+    // 模态框关闭逻辑
     closeBtn.addEventListener('click', () => {
         modal.style.display = 'none';
     });
 
-    // 点击模态框背景关闭
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.style.display = 'none';
         }
     });
 
-    // ESC 键关闭
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.style.display === 'flex') {
             modal.style.display = 'none';

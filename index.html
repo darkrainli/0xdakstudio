@@ -5,22 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的艺术作品集</title>
     <link rel="stylesheet" href="style.css">
+    <!-- 引入 Supabase 客户端 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="gallery">
-        <!-- GALLERY_START -->
-        <div class="artwork-item"><img src="images/GWSccjpXgAEyrec.jpg" alt="GWSccjpXgAEyrec.jpg"></div>
-        <div class="artwork-item"><img src="images/WechatIMG4310.jpg" alt="WechatIMG4310.jpg"></div>
-        <div class="artwork-item"><img src="images/shufa01.png" alt="shufa01.png"></div>
-    <!-- GALLERY_END -->
+    <div class="gallery" id="gallery-container">
+        <!-- 内容将由 JavaScript 动态加载 -->
+        <div style="color: #666; padding: 20px;">正在加载作品...</div>
     </div>
     
-    <!-- 简单的模态框，用于点击查看大图（可选功能，增加体验） -->
+    <!-- 简单的模态框，用于点击查看大图 -->
     <div id="modal" class="modal">
         <span class="close">&times;</span>
-        <img class="modal-content" id="modal-img">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <img class="modal-content" id="modal-img">
+            <div class="modal-caption" id="modal-caption"></div>
+        </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
