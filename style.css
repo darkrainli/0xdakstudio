@@ -1,0 +1,96 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #fff; /* 白色背景 */
+    font-family: sans-serif;
+    overflow-x: hidden;
+}
+
+.gallery {
+    display: grid;
+    /* 
+       自适应列数：
+       当屏幕变宽时，每列至少 20% 宽 (5列) 或 25% 宽 (4列) 等。
+       minmax(20vw, 1fr) 意味着在非常宽的屏幕上至少占 20% 视口宽度。
+       或者我们可以用像素值，比如 minmax(300px, 1fr)。
+       为了“填满页面”且是正方形，我们通常希望列数是整数且没有剩余空间。
+       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10pt; /* 作品间隔 10pt */
+    padding: 10pt; /* 页面边缘也保留 10pt 间距，保持视觉统一 */
+}
+
+.artwork-item {
+    position: relative;
+    width: 100%;
+    /* 强制保持正方形 */
+    aspect-ratio: 1 / 1; 
+    overflow: hidden;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+.artwork-item:hover {
+    opacity: 0.9;
+}
+
+.artwork-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 确保图片填满正方形且不变形 */
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.artwork-item:hover img {
+    transform: scale(1.05); /* 悬停时轻微放大效果 */
+}
+
+/* 针对移动设备的优化 */
+@media (max-width: 600px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr); /* 手机上强制两列 */
+    }
+}
+
+@media (max-width: 400px) {
+    .gallery {
+        grid-template-columns: 1fr; /* 极小屏幕一列 */
+    }
+}
+
+/* 模态框样式 */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.9); 
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
