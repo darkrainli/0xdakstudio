@@ -10,9 +10,27 @@
 </head>
 <body>
     <canvas id="matrix-bg"></canvas>
-    <div class="gallery" id="gallery-container">
-        <!-- 内容将由 JavaScript 动态加载 -->
-        <div style="color: #666; padding: 20px;">正在加载作品...</div>
+
+    <!-- 顶部 Header -->
+    <header class="site-header">
+        <img src="assets/logo.svg" alt="0xdak Art Studio" class="logo">
+        <h1 class="site-title">0xdak Art Studio</h1>
+    </header>
+
+    <!-- 横向画廊容器 -->
+    <div class="horizontal-gallery-container">
+        <!-- 左右两侧的装饰性矩形（可选，或作为无限滚动的缓冲） -->
+        <div class="placeholder-box"></div>
+        
+        <!-- 动态加载的作品区域 -->
+        <div class="gallery-track" id="gallery-track">
+            <!-- 初始占位符，稍后被 JS 替换 -->
+            <div class="artwork-card placeholder"></div>
+            <div class="artwork-card placeholder"></div>
+            <div class="artwork-card placeholder"></div>
+        </div>
+
+        <div class="placeholder-box"></div>
     </div>
     
     <!-- 简单的模态框，用于点击查看大图 -->
