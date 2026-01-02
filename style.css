@@ -100,18 +100,36 @@ body {
 .gallery-track {
     display: flex;
     align-items: center;
-    gap: 20px; /* 图片之间的间距 */
-    padding: 0 5vw; /* 左右留白 */
+    gap: 2vw; /* 间距改为视口宽度的 2% */
+    /* 
+       关键调整：让第一个和最后一个元素能居中
+       计算公式：padding-left = (100vw - cardWidth) / 2
+       这里假设卡片宽度是 40vw (下面设置)，那么 padding 就是 30vw
+    */
+    padding: 0 30vw; 
     /* 防止拖拽时选中文字或图片 */
     user-select: none; 
     -webkit-user-select: none;
 }
 
 .artwork-card {
-    /* 固定为 600x600px */
-    width: 600px;
-    height: 600px;
-    /* 移除之前的 max/min 限制，强制尺寸 */
+    /* 改为视口宽度百分比 */
+    /* 假设我们希望中间的画占据屏幕宽度的 40% 左右 */
+    width: 40vw; 
+    height: 40vw; /* 保持正方形 */
+    
+    /* 限制最大尺寸，防止在大屏幕上大得离谱 */
+    max-width: 800px;
+    max-height: 800px;
+    
+    /* 限制最小尺寸，防止在手机上太小 */
+    min-width: 300px;
+    min-height: 300px;
+
+    /* 移除之前的固定像素设置 */
+    /* width: 600px; */
+    /* height: 600px; */
+    
     flex-shrink: 0; /* 防止被挤压 */
     
     background-color: #D9D9D9; /* 默认占位灰 */
@@ -121,8 +139,18 @@ body {
     justify-content: center;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    
+    /* 可选：给非中心的卡片一点透明度，突出中间的？目前先保持一致 */
+    /* opacity: 0.8; */
 }
+
+/* 
+   可选优化：如果想让“居中”的那张卡片更大一点（Carousel 效果），
+   需要配合 JS 计算 scroll 位置来动态添加 class。
+   目前先保持简单的平铺，通过 padding 让首尾可居中。
+*/
+
 
 /* 拖拽时取消 hover 效果，防止闪烁 */
 .horizontal-gallery-container.is-dragging .artwork-card {
