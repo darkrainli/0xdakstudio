@@ -45,12 +45,12 @@ function simplex2(x, y) {
 }
 
 // --- 动画配置 ---
-const GRID_SIZE = 15; // 网格大小 (像素)
+const GRID_SIZE = 25; // 增加网格间距 (从 15 -> 25)
 let time = 0;
 
 function draw() {
     // 1. 清空背景
-    ctx.fillStyle = '#DFD7D3';
+    ctx.fillStyle = '#F4F4F4'; // 更新为 #F4F4F4
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = '#000'; // 圆点颜色
@@ -60,31 +60,33 @@ function draw() {
         for (let y = 0; y < canvas.height; y += GRID_SIZE) {
             
             // 3. 计算噪声值
-            // scale: 控制噪声的“缩放”，值越小，斑点越大越平滑
-            // time: 控制流动
-            const scale = 0.003;
-            const noiseVal = simplex2(x * scale, y * scale + time * 0.05); 
+            // scale: 控制纹理大小，稍微调大一点让“水滴”感更强
+            const scale = 0.005;
             
-            // 4. 将噪声值映射到圆点半径
-            // noiseVal 范围大概在 -1 到 1 之间
-            // 我们需要把它映射到 0 到 GRID_SIZE/2
+            // 核心修改：模拟下落
+            // 我们让 y 轴的噪声采样坐标随时间快速移动 (y - time * speed)
+            // x 轴稍微动一点点，模拟水流的左右摆动
+            // 这里的 time * 100 表示 y 轴移动速度很快，像下雨/水流
+            const noiseVal = simplex2(x * scale + time * 0.2, (y * scale) - (time * 0.8)); 
             
-            // 增加对比度：让大的更大，小的更小
-            let radius = (noiseVal + 0.2) * (GRID_SIZE * 0.8);
+            // 4. 映射半径
+            // 让水滴感更明显：大部分地方是空的（负值截断），只有噪声峰值处出现圆点
+            let radius = (noiseVal - 0.2) * (GRID_SIZE * 0.8);
             
-            // 限制最小和最大半径
-            if (radius < 1) radius = 1; // 最小也是个小点，保持网格感
-            if (radius > GRID_SIZE / 1.5) radius = GRID_SIZE / 1.5;
-
-            // 5. 绘制圆点
-            ctx.beginPath();
-            ctx.arc(x + GRID_SIZE/2, y + GRID_SIZE/2, radius, 0, Math.PI * 2);
-            ctx.fill();
+            // 只有当半径大于 0 时才绘制，这样会形成稀疏的水滴分布
+            if (radius > 0) {
+                // 限制最大半径，不要粘在一起
+                if (radius > GRID_SIZE / 2.5) radius = GRID_SIZE / 2.5;
+                
+                ctx.beginPath();
+                ctx.arc(x + GRID_SIZE/2, y + GRID_SIZE/2, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     }
 
     // 6. 时间流动
-    time += 0.05; // 控制速度
+    time += 0.02; // 整体流速
 
     requestAnimationFrame(draw);
 }
