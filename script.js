@@ -34,15 +34,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
-            // 清空默认的占位符
-            galleryTrack.innerHTML = '';
+            // 清空默认的占位符 (除了第一个 hero-card)
+            // 修正：我们不应该清空整个 innerHTML，因为那会删掉我们的 Canvas
+            // 我们应该只删除那些 class 为 "artwork-card placeholder" 的元素
+            const placeholders = galleryTrack.querySelectorAll('.artwork-card.placeholder');
+            placeholders.forEach(el => el.remove());
 
             if (!data || data.length === 0) {
                 // 如果没有数据，显示几个空的灰色方块作为演示
+                // 注意：这里追加在 hero-card 后面
                 for(let i=0; i<3; i++) {
                     const div = document.createElement('div');
                     div.className = 'artwork-card';
-                    // 灰色背景已经在 CSS 里设置了
                     galleryTrack.appendChild(div);
                 }
                 return;
