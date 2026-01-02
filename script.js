@@ -10,13 +10,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchArtworks() {
         // 如果没有配置 Supabase，显示提示
-        if (!supabase) {
-            galleryContainer.innerHTML = '<div style="padding:20px">请先配置 config.js 里的 Supabase 密钥</div>';
-            return;
+        if (!window.sbClient) {
+            // 尝试等待一会儿（针对慢网速）
+            await new Promise(r => setTimeout(r, 500));
+            if (!window.sbClient) {
+                galleryContainer.innerHTML = '<div style="padding:20px">正在连接数据库，请稍候...<br><small>如果长时间无反应，请检查 config.js 配置或网络。</small></div>';
+                // 最后再试一次
+                setTimeout(() => {
+                    if (window.sbClient) fetchArtworks();
+                    else galleryContainer.innerHTML = '<div style="padding:20px; color:red">连接数据库失败。请刷新页面重试。</div>';
+                }, 2000);
+                return;
+            }
         }
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await window.sbClient
                 .from('artworks')
                 .select('*')
                 .order('created_at', { ascending: false });

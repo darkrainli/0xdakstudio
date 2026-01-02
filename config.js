@@ -7,30 +7,29 @@ const SUPABASE_KEY = 'sb_publishable_f_T0nYNO6M0VuAmvmY5cDw_WKRdb_Br';
 // 注意：需要先在 HTML 中引入 Supabase JS 库
 // <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-let supabase;
+// 使用 window.sbClient 避免与库本身的全局变量 supabase 冲突
+window.sbClient = null;
 
-// 确保 createClient 可用
 try {
-    // 检查 window.supabase 是否存在以及是否有 createClient 方法
+    // 检查 window.supabase 是否存在（这是 Supabase 库的全局对象）
     if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('Supabase client initialized successfully.');
+        window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('Supabase client initialized successfully as window.sbClient.');
     } 
-    // 某些环境（如本地文件打开）可能会直接暴露 createClient
+    // 兼容环境
     else if (typeof createClient === 'function') {
-        supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.sbClient = createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('Supabase client initialized via global function.');
     } 
-    // 如果都不行，抛出错误
     else {
-        throw new Error('Supabase library not loaded properly.');
+        console.error('Supabase library not loaded properly.');
     }
 } catch (e) {
     console.error('Supabase initialization error:', e);
-    // 尝试最后一种挽救措施：等待 DOM 加载完毕再试一次
+    // 懒加载重试
     window.addEventListener('load', () => {
-        if (!supabase && typeof window.supabase !== 'undefined') {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        if (!window.sbClient && typeof window.supabase !== 'undefined') {
+            window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             console.log('Supabase client initialized via lazy load.');
         }
     });

@@ -85,21 +85,21 @@
                 const fileName = `${Date.now()}.${fileExt}`;
                 const filePath = `${fileName}`;
 
-                const { data: uploadData, error: uploadError } = await supabase.storage
+                const { data: uploadData, error: uploadError } = await window.sbClient.storage
                     .from('portfolio')
                     .upload(filePath, file);
 
                 if (uploadError) throw uploadError;
 
                 // 2. 获取图片公开链接
-                const { data: { publicUrl } } = supabase.storage
+                const { data: { publicUrl } } = window.sbClient.storage
                     .from('portfolio')
                     .getPublicUrl(filePath);
 
                 statusMsg.innerText = '图片上传成功，正在保存信息...';
 
                 // 3. 保存信息到 Database
-                const { error: dbError } = await supabase
+                const { error: dbError } = await window.sbClient
                     .from('artworks')
                     .insert([
                         { 
@@ -131,9 +131,16 @@
 
         async function loadArtworks() {
             const gallery = document.getElementById('admin-gallery');
+            if (!window.sbClient) {
+                gallery.innerHTML = '正在连接数据库...';
+                // 等待初始化
+                setTimeout(loadArtworks, 1000);
+                return;
+            }
+            
             gallery.innerHTML = '加载中...';
 
-            const { data, error } = await supabase
+            const { data, error } = await window.sbClient
                 .from('artworks')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -169,7 +176,7 @@
 
             try {
                 // 1. 删除数据库记录
-                const { error: dbError } = await supabase
+                const { error: dbError } = await window.sbClient
                     .from('artworks')
                     .delete()
                     .eq('id', id);
