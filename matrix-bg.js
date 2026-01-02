@@ -59,7 +59,7 @@ function noise(x, y, z) {
 // ---------------------------------------------------
 
 // 配置参数
-const gridSize = 15; // 稍微增大网格间距，让离散感更强
+const gridSize = 12; // 恢复之前的网格大小
 let time = 0;
 
 function draw() {
@@ -73,30 +73,27 @@ function draw() {
     for (let x = 0; x < canvas.width; x += gridSize) {
         for (let y = 0; y < canvas.height; y += gridSize) {
             // 3. 计算噪声值
-            const n = noise(x / 400, y / 400, time); // 增大除数，让云团更舒缓
+            // 恢复之前的参数 x/300, y/300
+            const n = noise(x / 300, y / 300, time);
+            
             const value = (n + 1) / 2;
 
-            // 4. 计算偏移量 (Jitter)
-            // 让点的位置不再死板地固定在网格上
-            // value 越大（即点越大），偏移越小（为了保持视觉重心）；点越小，越容易飘散
-            // 随机偏移范围：-gridSize/2 到 +gridSize/2
-            const offsetX = (Math.random() - 0.5) * gridSize * 0.8;
-            const offsetY = (Math.random() - 0.5) * gridSize * 0.8;
-
-            // 5. 绘制点
-            let radius = value * gridSize * 0.6; // 稍微减小半径比例
+            // 4. 根据噪声值决定点的半径
+            // 恢复之前的对比度逻辑
+            let radius = value * gridSize * 0.8;
             
+            // 只有当半径足够大时才绘制
             if (radius > 1) {
                 ctx.beginPath();
-                // 加上偏移量
-                ctx.arc(x + offsetX, y + offsetY, radius / 2, 0, Math.PI * 2);
+                // 移除 offset，恢复整齐排列
+                ctx.arc(x, y, radius / 2, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
     }
 
     // 时间流速
-    time += 0.002; // 稍微减慢
+    time += 0.003; // 恢复之前的流速
 
     requestAnimationFrame(draw);
 }
