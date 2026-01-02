@@ -5,22 +5,25 @@
 }
 
 body {
-    background-color: transparent; /* 让 Canvas 负责背景 */
+    background-color: #F4F4F4; /* 恢复纯色背景 */
     color: #000; /* 黑色文字 */
     font-family: sans-serif;
     overflow-x: hidden;
 }
 
-#matrix-bg {
+/* 移除旧的 matrix-bg 样式 */
+/* #matrix-bg { ... } */
+
+/* #matrix-bg {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     z-index: -1;
-    opacity: 1; /* 既然颜色已经很浅了，不需要再降透明度 */
+    opacity: 1; 
     pointer-events: none;
-}
+} */
 
 /* ----------------------
    Header 样式
