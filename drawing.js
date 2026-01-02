@@ -1,3 +1,5 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('art-canvas');
     const ctx = canvas.getContext('2d');
@@ -15,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.width = parent.clientWidth;
         canvas.height = parent.clientHeight;
         
-        // 填充白色背景（否则 MobileNet 会看到黑色背景）
+        // 填充白色背景（否则 API 会看到黑色背景）
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
@@ -81,20 +83,39 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     });
 
-    // 3. AI 识别逻辑 (MobileNet)
-    let model = null;
-
-    // 预加载模型
-    async function loadModel() {
-        try {
-            // 加载 MobileNet 模型
-            model = await mobilenet.load();
-            console.log('Nano Banana (MobileNet) loaded!');
-        } catch (err) {
-            console.error('Failed to load model:', err);
+    // 3. Gemini AI 识别逻辑
+    async function identifyDrawingWithGemini(canvas) {
+        const API_KEY = window.GEMINI_API_KEY;
+        
+        if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
+            throw new Error("请先在 config.js 中配置 Google Gemini API Key");
         }
+
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        // 使用 gemini-1.5-flash 模型，速度快且便宜
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        // 1. 将 canvas 转换为 base64 (移除 data:image/jpeg;base64, 前缀)
+        const base64Image = canvas.toDataURL("image/jpeg")
+            .replace(/^data:image\/jpeg;base64,/, "");
+
+        // 2. 准备 Prompt
+        const prompt = "Look at this simple sketch. What object is it depicting? Answer in one word in Chinese. (e.g. '香蕉'). If it's abstract or messy, make a creative guess.";
+
+        // 3. 调用 API
+        const result = await model.generateContent([
+            prompt,
+            {
+                inlineData: {
+                    data: base64Image,
+                    mimeType: "image/jpeg",
+                },
+            },
+        ]);
+
+        const response = await result.response;
+        return response.text().trim();
     }
-    loadModel();
 
     nextBtn.addEventListener('click', async () => {
         // 显示遮罩和加载状态
@@ -102,57 +123,27 @@ document.addEventListener('DOMContentLoaded', () => {
         aiStatus.style.display = 'flex';
         aiResult.style.display = 'none';
 
-        if (!model) {
-            await loadModel();
-        }
-
-        if (model) {
-            try {
-                // 预测
-                const predictions = await model.classify(canvas);
-                console.log('Predictions:', predictions);
-
-                // 获取概率最高的结果
-                const topPrediction = predictions[0];
-                const className = topPrediction.className;
-                
-                // 简单的中文翻译映射 (示例)
-                const translations = {
-                    'banana': '香蕉',
-                    'apple': '苹果',
-                    'orange': '橙子',
-                    'computer': '电脑',
-                    'cup': '杯子',
-                    'pencil': '铅笔',
-                    // ... 更多映射可以在这里添加，或者直接显示英文
-                };
-
-                const displayName = translations[className.toLowerCase()] || className;
-
-                // 模拟思考延迟，增加仪式感
-                setTimeout(() => {
-                    aiStatus.style.display = 'none';
-                    aiResult.style.display = 'block';
-                    predictionText.innerText = `这看起来像... ${displayName}！`;
-                }, 1500);
-
-            } catch (err) {
-                console.error(err);
-                aiStatus.style.display = 'none';
-                aiResult.style.display = 'block';
-                predictionText.innerText = 'Nano Banana 遇到了一点问题...';
-            }
-        } else {
+        try {
+            const text = await identifyDrawingWithGemini(canvas);
+            
             aiStatus.style.display = 'none';
             aiResult.style.display = 'block';
-            predictionText.innerText = '模型加载失败，请检查网络。';
+            predictionText.innerText = `Nano Banana 觉得这是... ${text}！`;
+
+        } catch (err) {
+            console.error(err);
+            aiStatus.style.display = 'none';
+            aiResult.style.display = 'block';
+            
+            if (err.message.includes("API Key")) {
+                predictionText.innerText = "请配置 API Key";
+            } else {
+                predictionText.innerText = "Nano Banana 遇到了一点问题...";
+            }
         }
     });
 
     retryBtn.addEventListener('click', () => {
         aiOverlay.classList.remove('active');
-        // 可选：是否要在重试时清空画布？
-        // ctx.fillStyle = '#ffffff';
-        // ctx.fillRect(0, 0, canvas.width, canvas.height);
     });
 });
