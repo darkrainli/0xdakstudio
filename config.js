@@ -9,19 +9,29 @@ const SUPABASE_KEY = 'sb_publishable_f_T0nYNO6M0VuAmvmY5cDw_WKRdb_Br';
 
 let supabase;
 
+// 确保 createClient 可用
 try {
-    // 确保 createClient 可用
+    // 检查 window.supabase 是否存在以及是否有 createClient 方法
     if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('Supabase client initialized successfully.');
-    } else if (typeof createClient === 'function') {
-        // 兼容直接引入的情况
+    } 
+    // 某些环境（如本地文件打开）可能会直接暴露 createClient
+    else if (typeof createClient === 'function') {
         supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('Supabase client initialized via global function.');
-    } else {
-        console.error('Supabase library not loaded! Check your internet connection or script tag.');
-        alert('Supabase 组件加载失败，请检查网络或刷新页面。');
+    } 
+    // 如果都不行，抛出错误
+    else {
+        throw new Error('Supabase library not loaded properly.');
     }
 } catch (e) {
     console.error('Supabase initialization error:', e);
+    // 尝试最后一种挽救措施：等待 DOM 加载完毕再试一次
+    window.addEventListener('load', () => {
+        if (!supabase && typeof window.supabase !== 'undefined') {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('Supabase client initialized via lazy load.');
+        }
+    });
 }
