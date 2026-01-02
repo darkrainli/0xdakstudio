@@ -59,7 +59,7 @@ function noise(x, y, z) {
 // ---------------------------------------------------
 
 // 配置参数
-const gridSize = 12; // 恢复之前的网格大小
+const gridSize = 20; // 增大网格到 20px
 let time = 0;
 
 function draw() {
