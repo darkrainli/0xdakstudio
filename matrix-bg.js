@@ -6,6 +6,11 @@ function resizeCanvas() {
     canvas.height = window.innerHeight;
 }
 resizeCanvas();
+// 移除 resize 事件监听，或者确保 resize 后重新开始绘制（如果之前的绘制循环还在运行的话）
+// 但在 requestAnimationFrame 中，只要 ctx 还在，它就会继续画。
+// 问题在于：当改变 canvas 尺寸时，画布内容会被清空。
+// 我们的 draw 函数每一帧都会清空并重绘，所以理论上不应该消失。
+// 除非... resize 导致了某些状态重置。
 window.addEventListener('resize', resizeCanvas);
 
 // ---------------------------------------------------
