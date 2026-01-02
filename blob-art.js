@@ -1,135 +1,169 @@
 const blobCanvas = document.getElementById('blob-canvas');
 
 if (blobCanvas) {
-    const bCtx = blobCanvas.getContext('2d');
+    const ctx = blobCanvas.getContext('2d');
     let width, height;
+    let dpr = window.devicePixelRatio || 1;
 
-    // 初始化 Canvas 尺寸
-    function initBlobCanvas() {
-        // 确保获取到容器的尺寸
+    // ----------------------------
+    // 1. 高清 Canvas 初始化
+    // ----------------------------
+    function initCanvas() {
         const parent = blobCanvas.parentElement;
         if (parent) {
-            width = parent.clientWidth || 300;
-            height = parent.clientHeight || 300;
+            // 获取 CSS 显示尺寸
+            const rect = parent.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
             
-            // 设置 Canvas 内部分辨率
-            blobCanvas.width = width;
-            blobCanvas.height = height;
+            // 设置物理像素尺寸 (解决模糊问题)
+            blobCanvas.width = width * dpr;
+            blobCanvas.height = height * dpr;
             
-            console.log('Blob Canvas resized to:', width, height);
+            // 缩放绘图上下文，使绘图操作可以直接使用逻辑像素
+            ctx.scale(dpr, dpr);
+            
+            console.log('Grid Art Canvas resized:', width, height, 'DPR:', dpr);
         }
     }
 
-    window.addEventListener('resize', initBlobCanvas);
-    // 立即执行一次，并延时执行以确保布局稳定
-    initBlobCanvas();
-    setTimeout(initBlobCanvas, 500);
+    window.addEventListener('resize', () => {
+        dpr = window.devicePixelRatio || 1;
+        initCanvas();
+    });
+    
+    // 初始延迟，确保容器布局完成
+    setTimeout(() => {
+        initCanvas();
+        initEntities();
+        animate();
+    }, 100);
 
-    // Metaballs 配置
-    const numBlobs = 8;
-    const blobs = [];
-
-    // 初始化 blobs
-    function initBlobs() {
-        blobs.length = 0; // 清空
-        for (let i = 0; i < numBlobs; i++) {
-            blobs.push({
+    // ----------------------------
+    // 2. 实体定义 (底层虚拟对象)
+    // ----------------------------
+    const entities = [];
+    // 参考图颜色：黑色为主，辅以深黄、橙红、紫
+    const colors = ['#1A1A1A', '#1A1A1A', '#1A1A1A', '#D4AF37', '#C04000', '#6A0DAD'];
+    
+    function initEntities() {
+        entities.length = 0;
+        // 创建几个移动的“球体”
+        const numEntities = 7;
+        for (let i = 0; i < numEntities; i++) {
+            entities.push({
                 x: Math.random() * (width || 300),
                 y: Math.random() * (height || 300),
-                vx: (Math.random() - 0.5) * 1.5,
-                vy: (Math.random() - 0.5) * 1.5,
-                r: Math.random() * 30 + 30 // 半径 30-60
+                vx: (Math.random() - 0.5) * 1.2, // 速度
+                vy: (Math.random() - 0.5) * 1.2,
+                radius: Math.random() * 50 + 40, // 半径 40-90
+                color: colors[i % colors.length], // 循环分配颜色
+                // 脉冲参数（让圆稍微呼吸）
+                pulseOffset: Math.random() * Math.PI * 2,
+                pulseSpeed: 0.05
             });
         }
     }
-    // 确保有宽高后再初始化球体
-    setTimeout(initBlobs, 100);
 
-    function updateBlobs() {
+    function updateEntities() {
         if (!width || !height) return;
 
-        blobs.forEach(b => {
-            b.x += b.vx;
-            b.y += b.vy;
+        entities.forEach(e => {
+            e.x += e.vx;
+            e.y += e.vy;
 
-            // 边界反弹
-            if (b.x < b.r) { b.x = b.r; b.vx *= -1; }
-            if (b.x > width - b.r) { b.x = width - b.r; b.vx *= -1; }
-            if (b.y < b.r) { b.y = b.r; b.vy *= -1; }
-            if (b.y > height - b.r) { b.y = height - b.r; b.vy *= -1; }
+            // 简单的边界反弹
+            if (e.x < -e.radius) e.x = width + e.radius;
+            if (e.x > width + e.radius) e.x = -e.radius;
+            if (e.y < -e.radius) e.y = height + e.radius;
+            if (e.y > height + e.radius) e.y = -e.radius;
+
+            // 呼吸效果
+            e.currentRadius = e.radius + Math.sin(Date.now() * 0.002 + e.pulseOffset) * 10;
         });
     }
 
-    function drawBlobs() {
+    // ----------------------------
+    // 3. 网格渲染 (Grid Rendering)
+    // ----------------------------
+    const gridSize = 16; // 网格间距，越小点越密
+
+    function draw() {
         if (!width || !height) return;
 
         // 清空画布
-        bCtx.clearRect(0, 0, width, height);
+        ctx.clearRect(0, 0, width, height);
         
-        // 保存状态
-        bCtx.save();
-        
-        // 关键：为了在浅色背景上显示 Metaballs，我们需要特殊处理
-        // 这里的 contrast 滤镜需要配合白色背景才能产生“粘连”效果
-        // 所以我们先画一个白底，然后画黑球，最后把白色变透明？不行，canvas 不支持把特定颜色变透明。
-        
-        // 替代方案：不使用滤镜，直接画圆，虽然没有粘连效果，但至少能看到东西。
-        // 或者：保持滤镜，但背景必须是白色。
-        // 鉴于我们的卡片背景是 #EAEAEA (浅灰)，我们可以把 canvas 背景设为透明，
-        // 但滤镜需要“对比”，所以我们可以：
-        // 1. 在 canvas 上填满 #EAEAEA
-        // 2. 画模糊的黑球
-        // 3. 应用 contrast
-        
-        // 尝试实现：
-        bCtx.filter = 'blur(12px) contrast(20)';
-        
-        // 填充背景色 (必须填，否则 contrast 对透明背景无效)
-        bCtx.fillStyle = '#EAEAEA'; 
-        bCtx.fillRect(0, 0, width, height);
-        
-        bCtx.fillStyle = '#000';
-        
-        // 绘制所有 blob
-        blobs.forEach(b => {
-            bCtx.beginPath();
-            bCtx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-            bCtx.fill();
-        });
-        
-        bCtx.restore(); // 恢复滤镜状态
+        // 绘制浅灰色背景，或者保持透明（这里填一个很淡的背景让点阵更明显）
+        // ctx.fillStyle = '#EAEAEA';
+        // ctx.fillRect(0, 0, width, height);
 
-        // 绘制一些额外的几何装饰（点阵），模仿参考图
-        // 这些装饰不参与 blur
-        drawDecorations();
-    }
+        // 遍历网格
+        for (let x = 0; x < width; x += gridSize) {
+            for (let y = 0; y < height; y += gridSize) {
+                
+                // 计算该网格点到最近实体的距离
+                let minDist = Infinity;
+                let closestEntity = null;
 
-    function drawDecorations() {
-        // 随机画一些小的矩形点阵
-        bCtx.fillStyle = '#000';
-        const gridSize = 4;
-        
-        // 左上角点阵
-        for(let x=40; x<100; x+=12) {
-            for(let y=40; y<100; y+=12) {
-                // 静态的随机
-                // 为了不闪烁，我们可以用坐标哈希
-                if(((x * y) % 7) > 2) {
-                    bCtx.fillRect(x, y, gridSize, gridSize);
+                for (const e of entities) {
+                    // 计算距离
+                    const dx = x - e.x;
+                    const dy = y - e.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    // 归一化距离：0 = 中心，1 = 边缘
+                    const normalizedDist = dist / e.currentRadius;
+
+                    if (normalizedDist < minDist) {
+                        minDist = normalizedDist;
+                        closestEntity = e;
+                    }
+                }
+
+                // 决定绘制什么
+                if (closestEntity && minDist < 1.2) {
+                    // 在实体范围内（或略微外扩）
+                    
+                    // 计算点的大小
+                    // 内部 (minDist < 0.8): 大点
+                    // 边缘 (0.8 < minDist < 1.0): 中点
+                    // 外圈 (1.0 < minDist < 1.2): 小点
+                    
+                    let dotRadius = 0;
+                    
+                    if (minDist < 0.7) {
+                        dotRadius = gridSize * 0.45; // 几乎填满网格的大点 (0.45 * 2 = 0.9)
+                    } else if (minDist < 1.0) {
+                        // 边缘过渡
+                        dotRadius = gridSize * 0.3;
+                    } else {
+                        // 外围光晕
+                        dotRadius = gridSize * 0.15;
+                    }
+
+                    ctx.fillStyle = closestEntity.color;
+                    
+                    ctx.beginPath();
+                    // 网格中心对齐：x + gridSize/2
+                    ctx.arc(x + gridSize/2, y + gridSize/2, dotRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // 背景噪点（可选，为了增加复古感）
+                    // ctx.fillStyle = '#CCCCCC';
+                    // ctx.beginPath();
+                    // ctx.arc(x + gridSize/2, y + gridSize/2, 1, 0, Math.PI * 2);
+                    // ctx.fill();
                 }
             }
         }
     }
 
-    function animateBlobs() {
-        updateBlobs();
-        drawBlobs();
-        requestAnimationFrame(animateBlobs);
+    function animate() {
+        updateEntities();
+        draw();
+        requestAnimationFrame(animate);
     }
-
-    // 启动
-    console.log('Blob animation started');
-    animateBlobs();
 
 } else {
     console.error('Blob canvas element not found!');
