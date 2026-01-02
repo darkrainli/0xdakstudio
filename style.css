@@ -23,18 +23,11 @@ body {
 }
 
 .gallery {
-    display: grid;
-    /* 
-       自适应列数：
-       当屏幕变宽时，每列至少 20% 宽 (5列) 或 25% 宽 (4列) 等。
-       minmax(20vw, 1fr) 意味着在非常宽的屏幕上至少占 20% 视口宽度。
-       或者我们可以用像素值，比如 minmax(300px, 1fr)。
-       为了“填满页面”且是正方形，我们通常希望列数是整数且没有剩余空间。
-       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 10pt; /* 作品间隔 10pt */
-    padding: 10pt; /* 页面边缘也保留 10pt 间距，保持视觉统一 */
+    display: none; /* 暂时隐藏画廊 */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; /* 10pt 约等于 13.3px，这里用 10px 也可以，或者 13px */
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .artwork-item {
