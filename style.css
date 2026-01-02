@@ -9,34 +9,33 @@ body {
     color: #000; /* 黑色文字 */
     font-family: sans-serif;
     overflow-x: hidden;
+    /* Flex 布局实现垂直居中 */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 /* 移除旧的 matrix-bg 样式 */
 /* #matrix-bg { ... } */
 
-/* #matrix-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    opacity: 1; 
-    pointer-events: none;
-} */
-
 /* ----------------------
    Header 样式
    ---------------------- */
 .site-header {
-    position: fixed;
-    top: 240px; /* 原来是 40px，下移 200pt (约 266px)，这里保守用 240px 或 260px，先用 240px 试试 */
-    left: 0;
+    /* position: fixed; */ /* 移除 fixed */
+    position: relative;
+    /* top: 240px; */ /* 移除 absolute top */
+    top: auto;
+    left: auto;
     width: 100%;
+    
+    /* Flex 占据上方空间 */
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: center; /* 在上方区域内垂直居中 */
+    
     z-index: 100;
     pointer-events: none; /* 让头部区域不阻挡鼠标事件 */
 }
@@ -44,7 +43,7 @@ body {
 .site-header > * {
     pointer-events: auto; /* 让内部元素（Logo）可以被点击 */
 }
-
+/* ... Logo 样式不变 ... */
 .logo-link {
     display: block;
     cursor: pointer;
@@ -79,11 +78,26 @@ body {
     align-items: center;
     justify-content: flex-start; /* 修正：从 center 改为 flex-start，防止内容溢出左边界无法滚动 */
     width: 100%;
-    height: 100vh; /* 占满全屏高度 */
+    /* height: 100vh; */ /* 移除 100vh */
+    height: auto;
+    /* padding-top: 300px; */ /* 移除 padding-top */
+    padding-top: 0;
+    
+    /* Flex 不伸缩，高度由内容决定 */
+    flex: 0 0 auto;
+    
     overflow-x: auto; /* 允许横向滚动 */
-    padding-top: 300px; /* 给下移后的 Header 留出空间，之前是 100px */
     box-sizing: border-box;
     cursor: grab; /* 鼠标变为抓手形状，提示可拖拽 */
+    
+    /* 稍微给点上下间距，避免太拥挤 */
+    padding-bottom: 20px;
+}
+
+/* 底部占位符样式 */
+.layout-spacer {
+    flex: 1; /* 占据下方空间，与 header 平衡 */
+    pointer-events: none;
 }
 
 .horizontal-gallery-container:active {
