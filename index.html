@@ -12,6 +12,9 @@
     
     <!-- 引入 Supabase 客户端 (更换为 unpkg 源) -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- 引入 TensorFlow.js 和 MobileNet -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@latest"></script>
 </head>
 <body>
     <!-- <canvas id="matrix-bg"></canvas> -->
@@ -24,8 +27,8 @@
         <h1 class="site-title">0xdak Art Studio</h1>
     </header>
 
-    <!-- 横向画廊容器 -->
-    <div class="horizontal-gallery-container">
+    <!-- 横向画廊容器 (暂时隐藏) -->
+    <div class="horizontal-gallery-container" style="display: none;">
         <!-- 左右两侧的装饰性矩形（可选，或作为无限滚动的缓冲） -->
         <div class="placeholder-box"></div>
         
@@ -38,6 +41,30 @@
         </div>
 
         <div class="placeholder-box"></div>
+    </div>
+
+    <!-- 新增：Nano Banana 画板区域 -->
+    <div class="drawing-container">
+        <div class="canvas-wrapper">
+            <canvas id="art-canvas"></canvas>
+            <div class="canvas-overlay" id="ai-overlay">
+                <div class="ai-status">
+                    <div class="spinner"></div>
+                    <p id="ai-text">Nano Banana 正在思考...</p>
+                </div>
+                <div id="ai-result" class="ai-result" style="display: none;">
+                    <h3>识别结果</h3>
+                    <p id="prediction-text"></p>
+                    <button id="retry-btn">再画一次</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="drawing-controls">
+            <button id="clear-btn" class="control-btn secondary">清除</button>
+            <div class="brush-info">请在上方绘制</div>
+            <button id="next-btn" class="control-btn primary">下一步 (AI 识别)</button>
+        </div>
     </div>
     
     <!-- 底部占位符，用于平衡布局，使 Header 和 Gallery 垂直居中 -->
@@ -53,7 +80,9 @@
     </div>
 
     <script src="config.js?v=5"></script>
-    <script src="script.js?v=5"></script>
+    <!-- <script src="script.js?v=5"></script> -->
+    <script src="drawing.js?v=1"></script>
     <!-- <script src="matrix-bg.js?v=3"></script> -->
+    <!-- <script src="blob-art.js?v=2"></script> -->
 </body>
 </html>
