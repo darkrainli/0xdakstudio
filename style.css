@@ -27,7 +27,7 @@ body {
    ---------------------- */
 .site-header {
     position: fixed;
-    top: 40px; /* 距离顶部稍微留点空间 */
+    top: 240px; /* 原来是 40px，下移 200pt (约 266px)，这里保守用 240px 或 260px，先用 240px 试试 */
     left: 0;
     width: 100%;
     display: flex;
@@ -35,6 +35,22 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 100;
+    pointer-events: none; /* 让头部区域不阻挡鼠标事件 */
+}
+
+.site-header > * {
+    pointer-events: auto; /* 让内部元素（Logo）可以被点击 */
+}
+
+.logo-link {
+    display: block;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.logo-link:hover {
+    opacity: 0.8;
 }
 
 .logo {
@@ -44,7 +60,7 @@ body {
 }
 
 .site-title {
-    font-family: 'Urbanist', sans-serif; /* 假设有引入，没有则回退到 sans-serif */
+    font-family: 'Urbanist', sans-serif;
     font-size: 16px;
     font-weight: 800;
     margin: 0;
@@ -62,8 +78,13 @@ body {
     width: 100%;
     height: 100vh; /* 占满全屏高度 */
     overflow-x: auto; /* 允许横向滚动 */
-    padding-top: 100px; /* 给 Header 留出空间 */
+    padding-top: 300px; /* 给下移后的 Header 留出空间，之前是 100px */
     box-sizing: border-box;
+    cursor: grab; /* 鼠标变为抓手形状，提示可拖拽 */
+}
+
+.horizontal-gallery-container:active {
+    cursor: grabbing; /* 按下时变为紧握手势 */
 }
 
 /* 隐藏滚动条 (Chrome/Safari) */
@@ -81,19 +102,19 @@ body {
     align-items: center;
     gap: 20px; /* 图片之间的间距 */
     padding: 0 5vw; /* 左右留白 */
+    /* 防止拖拽时选中文字或图片 */
+    user-select: none; 
+    -webkit-user-select: none;
 }
 
 .artwork-card {
-    /* Figma: 568x568 */
-    width: 50vh; /* 使用视口高度百分比，保证在不同屏幕上都能完整显示 */
-    height: 50vh;
-    max-width: 568px;
-    max-height: 568px;
-    min-width: 300px; /* 最小宽度 */
-    min-height: 300px;
+    /* 固定为 600x600px */
+    width: 600px;
+    height: 600px;
+    /* 移除之前的 max/min 限制，强制尺寸 */
+    flex-shrink: 0; /* 防止被挤压 */
     
     background-color: #D9D9D9; /* 默认占位灰 */
-    flex-shrink: 0; /* 防止被挤压 */
     
     display: flex;
     align-items: center;
@@ -101,6 +122,12 @@ body {
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.3s ease;
+}
+
+/* 拖拽时取消 hover 效果，防止闪烁 */
+.horizontal-gallery-container.is-dragging .artwork-card {
+    pointer-events: none;
+    transform: none;
 }
 
 .artwork-card:hover {
@@ -111,6 +138,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    pointer-events: none; /* 防止拖拽图片本身（浏览器默认行为） */
 }
 
 /* 左右两侧的装饰性占位块（可选） */

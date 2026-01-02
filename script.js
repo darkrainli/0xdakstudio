@@ -64,7 +64,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 galleryTrack.appendChild(div);
 
                 // 绑定点击事件
-                div.addEventListener('click', () => {
+                div.addEventListener('click', (e) => {
+                    // 如果正在拖拽（父容器有 is-dragging 类），则阻止弹窗
+                    if (document.querySelector('.horizontal-gallery-container').classList.contains('is-dragging')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+
                     modal.style.display = 'flex';
                     modalImg.src = item.image_url;
                     
@@ -100,4 +107,59 @@ document.addEventListener('DOMContentLoaded', async () => {
             modal.style.display = 'none';
         }
     });
+
+    // ---------------------------
+    // 拖拽滚动 (Drag-to-Scroll) 实现
+    // ---------------------------
+    const slider = document.querySelector('.horizontal-gallery-container');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    // 区分点击和拖拽
+    let isDragging = false; 
+
+    slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        isDragging = false; // 初始状态不是拖拽
+        slider.classList.add('active'); // 可以在 CSS 里加点样式
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+    });
+
+    slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.classList.remove('active');
+        setTimeout(() => {
+            slider.classList.remove('is-dragging'); // 延迟移除，防止触发点击
+        }, 50);
+    });
+
+    slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.classList.remove('active');
+        // 延迟一点点移除 is-dragging 类，确保 click 事件能检测到拖拽状态
+        setTimeout(() => {
+            slider.classList.remove('is-dragging');
+        }, 50);
+    });
+
+    slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        
+        e.preventDefault(); // 防止选中文本
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 1.5; // 滚动速度系数，1.5倍速
+        
+        // 如果移动距离超过 5px，则视为拖拽
+        if (Math.abs(walk) > 5) {
+            isDragging = true;
+            slider.classList.add('is-dragging');
+        }
+
+        slider.scrollLeft = scrollLeft - walk;
+    });
+
+    // 修改卡片点击事件：如果是拖拽，则不触发弹窗
+    // 我们需要在 fetchArtworks 函数里修改点击事件的逻辑
+    // 为了不破坏现有结构，我们使用事件委托或者在创建元素时修改逻辑
 });
