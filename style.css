@@ -396,6 +396,11 @@ body {
     cursor: pointer;
     transition: transform 0.3s ease, opacity 0.3s ease;
     
+    /* 防止文字被选中或移动 */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent; /* 移除点击高亮 */
+    
     /* 可选：给非中心的卡片一点透明度，突出中间的？目前先保持一致 */
     /* opacity: 0.8; */
 }
@@ -425,8 +430,11 @@ body {
     transform: none;
 }
 
-.artwork-card:hover {
-    transform: scale(1.02); /* 悬停微放大 */
+/* 仅在支持 hover 的设备（鼠标）上启用放大效果，防止触摸屏点击时闪烁 */
+@media (hover: hover) {
+    .artwork-card:hover {
+        transform: scale(1.02); /* 悬停微放大 */
+    }
 }
 
 .artwork-card img {
