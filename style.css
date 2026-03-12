@@ -5,7 +5,7 @@
 }
 
 body {
-    background-color: #FEFAFA; /* 调整为极淡的米白色/粉白色 */
+    background-color: #ff0000; /* 改为红色背景 */
     color: #000; /* 黑色文字 */
     font-family: sans-serif;
     overflow-x: hidden;
@@ -278,7 +278,7 @@ body {
     position: sticky;
     top: 0;
     padding: 20px 0;
-    background-color: rgba(254, 250, 250, 0.95); /* #FEFAFA 的 RGB 值，带点透明 */
+    background-color: rgba(255, 0, 0, 0.95); /* 红色背景，带点透明 */
     backdrop-filter: blur(10px);
     flex: 0 0 auto;
     border-bottom: 1px solid rgba(0,0,0,0.05);
@@ -539,7 +539,7 @@ body {
 
 /* 后台管理页面样式 */
 .admin-body {
-    background-color: #f4f4f4;
+    background-color: #ff0000;
     font-family: sans-serif;
     padding: 20px;
 }
